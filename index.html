@@ -16,7 +16,8 @@
             background-color: #f9fafb;
         }
         .chat-container {
-            height: calc(100vh - 180px);
+            height: 500px;
+            overflow-y: auto;
         }
         .message {
             max-width: 80%;
@@ -54,9 +55,9 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-6 max-w-4xl">
+    <div class="container mx-auto px-4 py-6 max-w-4xl" style="height: calc(100vh - 150px);">
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="chat-container p-4 overflow-y-auto" id="chat">
+            <div class="chat-container p-4" id="chat">
                 <div class="text-center py-10 text-gray-400" id="welcome-message">
                     <div class="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-full flex items-center justify-center">
                         <i data-feather="message-square" class="w-8 h-8 text-indigo-500"></i>
@@ -66,7 +67,7 @@
                 </div>
             </div>
 
-            <div class="border-t border-gray-200 p-4 bg-gray-50">
+            <div class="border-t border-gray-200 p-4 bg-gray-50" style="position: sticky; bottom: 0;">
                 <div class="flex items-center space-x-2">
                     <input type="text" id="userInput" placeholder="Type your message..." 
                         class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
