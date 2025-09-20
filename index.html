@@ -138,8 +138,17 @@
         const chatBox = document.getElementById("chat");
         const userInput = document.getElementById("userInput");
 
-        // ️ Replace this with your real OpenRouter API key
-        const API_KEY = "";
+        const res = await fetch("/api/chat", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                model: "deepseek/deepseek-chat-v3.1:free",
+                messages: messages
+              })
+            });
+
 
         let messages = [
             { role: "assistant", content: "Hello! I'm your AI assistant. How can I help you today?" }
