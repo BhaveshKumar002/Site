@@ -1,230 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenRouter AI Chat</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <style>
-        .chat-container {
-            height: calc(100vh - 200px);
-        }
-        .message-animation {
-            animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .typing-indicator::after {
-            content: "...";
-            animation: typing 1.5s infinite;
-        }
-        @keyframes typing {
-            0% { content: "."; }
-            33% { content: ".."; }
-            66% { content: "..."; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>OpenRouter Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    #chat { width: 100%; max-width: 600px; height: 400px; border: 1px solid #ccc; border-radius: 8px; padding: 10px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; }
+    .msg { margin: 5px 0; padding: 8px; border-radius: 6px; max-width: 80%; }
+    .user { background: #d0ebff; align-self: flex-end; text-align: right; }
+    .bot { background: #e6ffe6; align-self: flex-start; text-align: left; }
+    #inputArea { display: flex; width: 100%; max-width: 600px; gap: 5px; }
+    input, button { padding: 10px; font-size: 14px; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="max-w-4xl mx-auto p-4">
-        <!-- Header -->
-        <header class="flex items-center justify-between mb-8">
-            <div class="flex items-center space-x-3">
-                <div class="bg-indigo-600 p-2 rounded-lg">
-                    <i data-feather="message-square" class="text-white"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800">OpenRouter AI</h1>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button class="p-2 rounded-full hover:bg-gray-200 transition">
-                    <i data-feather="settings"></i>
-                </button>
-                <button class="p-2 rounded-full hover:bg-gray-200 transition">
-                    <i data-feather="help-circle"></i>
-                </button>
-            </div>
-        </header>
+<body>
+  <h2>Chatbot (OpenRouter)</h2>
 
-        <!-- Chat Container -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden chat-container flex flex-col">
-            <!-- Chat Messages -->
-            <div id="chat" class="flex-1 p-4 overflow-y-auto space-y-4">
-                <div class="flex justify-center">
-                    <div class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full text-sm">
-                        Today, {current_date}
-                    </div>
-                </div>
-                <div class="flex justify-center">
-                    <div class="bg-gray-100 text-gray-600 px-6 py-3 rounded-lg max-w-xs text-center">
-                        <p>Hello! I'm your AI assistant. How can I help you today?</p>
-                    </div>
-                </div>
-            </div>
+  <div id="chat"></div>
 
-            <!-- Input Area -->
-            <div class="border-t border-gray-200 p-4 bg-gray-50">
-                <div class="flex items-center space-x-2">
-                    <div class="flex-1 relative">
-                        <input 
-                            id="userInput" 
-                            type="text" 
-                            placeholder="Type your message..." 
-                            class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                            onkeypress="if(event.keyCode === 13) sendMessage()"
-                        >
-                    </div>
-                    <button 
-                        onclick="sendMessage()" 
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-full transition flex items-center justify-center"
-                    >
-                        <i data-feather="send" class="w-5 h-5"></i>
-                    </button>
-                </div>
-                <div class="mt-2 text-xs text-gray-500 text-center">
-                    OpenRouter AI may produce inaccurate information. Consider checking important information.
-                </div>
-            </div>
-        </div>
+  <div id="inputArea">
+    <input type="text" id="userInput" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
 
-        <!-- Model Selector (hidden by default) -->
-        <div id="modelSelector" class="hidden mt-4 bg-white rounded-lg shadow-lg p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-medium text-gray-800">Select AI Model</h3>
-                <button onclick="toggleModelSelector()" class="text-gray-500 hover:text-gray-700">
-                    <i data-feather="x"></i>
-                </button>
-            </div>
-            <div class="space-y-2">
-                <div class="flex items-center p-3 hover:bg-gray-100 rounded-lg cursor-pointer">
-                    <div class="bg-indigo-100 p-2 rounded-lg mr-3">
-                        <i data-feather="cpu" class="text-indigo-600"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium">DeepSeek Chat</p>
-                        <p class="text-xs text-gray-500">Free model with good performance</p>
-                    </div>
-                    <i data-feather="check" class="text-indigo-600"></i>
-                </div>
-                <div class="flex items-center p-3 hover:bg-gray-100 rounded-lg cursor-pointer">
-                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
-                        <i data-feather="zap" class="text-blue-600"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium">GPT-4</p>
-                        <p class="text-xs text-gray-500">Most capable model (requires API key)</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  <script>
+    const chatBox = document.getElementById("chat");
+    const userInput = document.getElementById("userInput");
 
-    <script>
-        // Initialize animations and icons
-        AOS.init();
-        feather.replace();
+    // ⚠️ Replace this with your real OpenRouter API key
+    const API_KEY = "";
 
-        // Get current date for welcome message
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const currentDate = new Date().toLocaleDateString('en-US', options);
-        document.querySelector('.bg-indigo-100').textContent = `Today, ${currentDate}`;
+    let messages = [];
 
-        // Chat functionality
-        const chatBox = document.getElementById("chat");
-        const userInput = document.getElementById("userInput");
+    function appendMessage(role, text) {
+      const div = document.createElement("div");
+      div.className = "msg " + role;
+      div.textContent = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
-        const res = await fetch("/api/chat", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                model: "deepseek/deepseek-chat-v3.1:free",
-                messages: messages
-              })
-            });
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
 
+      // Add user message
+      messages.push({ role: "user", content: text });
+      appendMessage("user", text);
+      userInput.value = "";
 
-        let messages = [
-            { role: "assistant", content: "Hello! I'm your AI assistant. How can I help you today?" }
-        ];
+      // Show bot "thinking..."
+      appendMessage("bot", "⏳ Thinking...");
+      const thinkingDiv = chatBox.lastChild;
 
-        function appendMessage(role, text) {
-            const messageDiv = document.createElement("div");
-            messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} message-animation`;
-            
-            const contentDiv = document.createElement("div");
-            contentDiv.className = `max-w-xs md:max-w-md lg:max-w-lg px-4 py-3 rounded-lg ${
-                role === 'user' 
-                    ? 'bg-indigo-600 text-white rounded-tr-none' 
-                    : 'bg-gray-100 text-gray-800 rounded-tl-none'
-            }`;
-            
-            contentDiv.textContent = text;
-            messageDiv.appendChild(contentDiv);
-            chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+      try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + API_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "deepseek/deepseek-chat-v3.1:free",
+            messages: messages
+          })
+        });
 
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text) return;
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content || "⚠️ No reply";
 
-            // Add user message
-            messages.push({ role: "user", content: text });
-            appendMessage("user", text);
-            userInput.value = "";
+        // Replace "thinking..." with reply
+        thinkingDiv.textContent = reply;
+        thinkingDiv.className = "msg bot";
 
-            // Show bot "thinking..."
-            const thinkingDiv = document.createElement("div");
-            thinkingDiv.className = "flex justify-start message-animation";
-            
-            const thinkingContent = document.createElement("div");
-            thinkingContent.className = "bg-gray-100 text-gray-800 px-4 py-3 rounded-lg rounded-tl-none max-w-xs typing-indicator";
-            thinkingContent.textContent = "Thinking";
-            
-            thinkingDiv.appendChild(thinkingContent);
-            chatBox.appendChild(thinkingDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        messages.push({ role: "assistant", content: reply });
 
-            try {
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": "Bearer " + API_KEY,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        model: "deepseek/deepseek-chat-v3.1:free",
-                        messages: messages
-                    })
-                });
-
-                const data = await res.json();
-                const reply = data.choices?.[0]?.message?.content || "⚠️ No reply";
-
-                // Remove thinking indicator
-                chatBox.removeChild(thinkingDiv);
-
-                // Add assistant reply
-                messages.push({ role: "assistant", content: reply });
-                appendMessage("assistant", reply);
-
-            } catch (err) {
-                thinkingContent.className = "bg-red-100 text-red-800 px-4 py-3 rounded-lg rounded-tl-none max-w-xs";
-                thinkingContent.textContent = "Error: " + err.message;
-            }
-        }
-
-        function toggleModelSelector() {
-            const selector = document.getElementById('modelSelector');
-            selector.classList.toggle('hidden');
-        }
-    </script>
+      } catch (err) {
+        thinkingDiv.textContent = "❌ Error: " + err.message;
+      }
+    }
+  </script>
 </body>
 </html>
