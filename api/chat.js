@@ -1,3 +1,4 @@
+// This is a serverless function that handles requests and adds API key securely.
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Only POST requests allowed' });
@@ -12,7 +13,7 @@ export default async function handler(req, res) {
                 "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
                 "Content-Type": "application/json",
             },
-            body: req.body,
+            body: req.body, // Passing the user's request body directly
         });
 
         const data = await response.json();
