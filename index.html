@@ -160,54 +160,54 @@
         }
 
         async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text) return;
+    const text = userInput.value.trim();
+    if (!text) return;
 
-            // Add user message
-            messages.push({ role: "user", content: text });
-            appendMessage("user", text);
-            userInput.value = "";
+    // Add user message
+    messages.push({ role: "user", content: text });
+    appendMessage("user", text);
+    userInput.value = "";
 
-            // Show bot "thinking..."
-            const thinkingDiv = document.createElement("div");
-            thinkingDiv.className = "flex justify-start message-animation";
-            
-            const thinkingContent = document.createElement("div");
-            thinkingContent.className = "bg-gray-100 text-gray-800 px-4 py-3 rounded-lg rounded-tl-none max-w-xs typing-indicator";
-            thinkingContent.textContent = "Thinking";
-            
-            thinkingDiv.appendChild(thinkingContent);
-            chatBox.appendChild(thinkingDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+    // Show bot "thinking..."
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.className = "flex justify-start message-animation";
+    
+    const thinkingContent = document.createElement("div");
+    thinkingContent.className = "bg-gray-100 text-gray-800 px-4 py-3 rounded-lg rounded-tl-none max-w-xs typing-indicator";
+    thinkingContent.textContent = "Thinking";
+    
+    thinkingDiv.appendChild(thinkingContent);
+    chatBox.appendChild(thinkingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-            try {
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": "Bearer " + API_KEY,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        model: "deepseek/deepseek-chat-v3.1:free",
-                        messages: messages
-                    })
-                });
+    try {
+        const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "deepseek/deepseek-chat-v3.1:free", // Change the model if needed
+                messages: messages,
+            }),
+        });
 
-                const data = await res.json();
-                const reply = data.choices?.[0]?.message?.content || "⚠️ No reply";
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content || "⚠️ No reply";
 
-                // Remove thinking indicator
-                chatBox.removeChild(thinkingDiv);
+        // Remove thinking indicator
+        chatBox.removeChild(thinkingDiv);
 
-                // Add assistant reply
-                messages.push({ role: "assistant", content: reply });
-                appendMessage("assistant", reply);
+        // Add assistant reply
+        messages.push({ role: "assistant", content: reply });
+        appendMessage("assistant", reply);
 
-            } catch (err) {
-                thinkingContent.className = "bg-red-100 text-red-800 px-4 py-3 rounded-lg rounded-tl-none max-w-xs";
-                thinkingContent.textContent = "Error: " + err.message;
-            }
-        }
+    } catch (err) {
+        thinkingContent.className = "bg-red-100 text-red-800 px-4 py-3 rounded-lg rounded-tl-none max-w-xs";
+        thinkingContent.textContent = "Error: " + err.message;
+    }
+}
+
 
         function toggleModelSelector() {
             const selector = document.getElementById('modelSelector');
